@@ -23,6 +23,14 @@ If you are using mTLS, is completely up to you how to get the clientCert and cli
 
 ## Self-signed certificate vs Trusted Certificate 
 
+## Get Started
+
+- A keyvault need to be created and it's name replaced inside `deployment/certs/generate-test-certs-keyvault.sh` 
+- Generate certificates for mTLS using azure keyvault `make keyvault-certs`
+- Start temporal cluster `make temporal-cluster-mtls`
+- Start workflow worker `make start-worker`
+- Start new helloworld workflow instance `http://localhost:8000/workflow/start`
+
 
 ## Resources
 

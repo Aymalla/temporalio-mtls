@@ -5,7 +5,7 @@ server:
 temporal:
   version: 1.0.0
   server:
-    hostname: 127.0.0.1
+    hostname: localhost
     port: 7233
     url: "${temporal.server.hostname}:${temporal.server.port}"
   workflow:

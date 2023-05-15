@@ -1,5 +1,7 @@
 package com.temporal.samples.helloworld;
 
+import io.grpc.Grpc;
+import io.grpc.TlsChannelCredentials;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
@@ -16,6 +18,9 @@ import com.temporal.samples.helloworld.workflows.GreetingWorkflow;
 import com.temporal.samples.helloworld.workflows.GreetingWorkflowImpl;
 import com.temporal.samples.helloworld.workflows.HelloActivityImpl;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -29,25 +34,47 @@ public class Client {
     @Value("${temporal.server.url}")
     private String temporalServerUrl;
 
+    @Value("${temporal.server.hostname}")
+    private String temporalServerHostName;
+
+    @Value("${temporal.server.port}")
+    private String temporalServerPort;
+
     @Value("${temporal.version}")
     private String temporalVersion;
 
-
     private WorkflowClient workflowClient;
 
-    public Client() {
+    public Client() throws IOException {
+
+        // Load your client certificate, which should look like:
+        InputStream clientCert = new FileInputStream("deployment/certs/certs/client.pem");
+        // PKCS8 client key, which should look like:
+        InputStream clientKey = new FileInputStream("deployment/certs/certs/client.key");
+        // certification Authority signing certificate
+        InputStream caCert = new FileInputStream("deployment/certs/certs/ca.cert");
+
+        var tlsBuilder = TlsChannelCredentials.newBuilder();
+        tlsBuilder.keyManager(clientCert, clientKey);
+        tlsBuilder.trustManager(caCert);
+        var channel = Grpc.newChannelBuilderForAddress("localhost", Integer.parseInt("7233"), tlsBuilder.build())
+                .overrideAuthority("tls-sample")
+                .build();
 
         /*
-         * Get a Workflow service temporalClient which can be used to start, Signal, and Query Workflow Executions.
+         * Get a Workflow service temporalClient which can be used to start, Signal, and
+         * Query Workflow Executions.
          * This gRPC stubs wrapper talks to the Temporal service.
          */
         WorkflowServiceStubs service = WorkflowServiceStubs.newServiceStubs(
                 WorkflowServiceStubsOptions
                         .newBuilder()
-                        .setTarget(temporalServerUrl)
+                        .setChannel(channel)
+                        // .setTarget(temporalServerUrl)
                         .build());
 
-        // WorkflowClient can be used to start, signal, query, cancel, and terminate Workflows.
+        // WorkflowClient can be used to start, signal, query, cancel, and terminate
+        // Workflows.
         workflowClient = WorkflowClient.newInstance(service);
     }
 
@@ -91,7 +118,8 @@ public class Client {
         worker.registerWorkflowImplementationTypes(GreetingWorkflowImpl.class);
 
         /*
-         * Register our Activity Types with the Worker. Since Activities are stateless and thread-safe,
+         * Register our Activity Types with the Worker. Since Activities are stateless
+         * and thread-safe,
          * the Activity Type is a shared instance.
          */
         worker.registerActivitiesImplementations(new HelloActivityImpl());
@@ -121,14 +149,15 @@ public class Client {
                 .setTaskQueue(temporalTaskQueue)
                 .build();
 
-        // Create the workflow temporalClient stub. It is used to start our workflow execution.
+        // Create the workflow temporalClient stub. It is used to start our workflow
+        // execution.
         var workflow = workflowClient.newWorkflowStub(GreetingWorkflow.class, options);
 
         /*
          * Execute our workflow and wait for it to complete. The call to our getGreeting
          * method is synchronous.
          */
-        var result = workflow.greet(workflowInstanceId,name);
+        var result = workflow.greet(workflowInstanceId, name);
         var workflowId = WorkflowStub.fromTyped(workflow).getExecution().getWorkflowId();
 
         // Display workflow execution results
