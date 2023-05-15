@@ -4,14 +4,12 @@
 	"name": "Temporal",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/java:0-17",
-	/*
 	"mounts": [
 		// Keep command history
-		"type=volume,source=temporalio-mtls-bashhistory,target=/home/vscode/commandhistory",
+		//"type=volume,source=temporalio-mtls-bashhistory,target=/home/vscode/commandhistory",
 		// Mount docker socket for docker builds
-		"type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock"
+		//"type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock"
 	  ],
-*/
 	"features": {
 		"ghcr.io/devcontainers/features/java:1.1.1": {
 			"version": "none",

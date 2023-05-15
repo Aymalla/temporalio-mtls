@@ -49,11 +49,6 @@ task(helloworld, dependsOn: 'classes', type: JavaExec) {
    classpath = sourceSets.main.runtimeClasspath
 }
 
-task(approval, dependsOn: 'classes', type: JavaExec) {
-   main = 'com.temporal.samples.approval.Application'
-   classpath = sourceSets.main.runtimeClasspath
-}
-
 /**
  * execute samples
  * usage : 

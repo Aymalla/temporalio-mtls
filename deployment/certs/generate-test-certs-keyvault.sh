@@ -3,7 +3,7 @@
 # In a production environment such artifacts should be genrated
 # by a proper certificate authority and handled in a secure manner.
 
-keyVault="kv-ay"
+keyVault="kv-aym"
 CERTS_DIR=./certs
 rm -rf $CERTS_DIR
 mkdir $CERTS_DIR
@@ -26,7 +26,7 @@ generate_root_ca_cert() {
     openssl pkcs12 -export -out "$CERTS_DIR/$certName.pfx" -inkey "$CERTS_DIR/$certName.key" -in "$CERTS_DIR/$certName.cert" -keypbe NONE -certpbe NONE -passout pass:
     
     # Import CA certificate .pfx into Key-Vault
-    CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $keyVault --name $certName --file $dir/$certName.pfx)
+    CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $keyVault --name $certName --file $CERTS_DIR/$certName.pfx)
 }
 
 generate_cert() {

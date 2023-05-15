@@ -54,7 +54,7 @@ services:
   temporal-ui:
     image: temporalio/ui:${UI_TAG:-latest}
     ports:
-      - "8080:8080"
+      - "8233:8233"
     volumes:
       - ${TEMPORAL_LOCAL_CERT_DIR}:${TEMPORAL_TLS_CERTS_DIR}
     environment:

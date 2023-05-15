@@ -30,7 +30,7 @@ generate-certs-openssl: ## 🔐 Generate the Certificates using Azure KeyVault
 	@cd deployment/certs && ./generate-test-certs-openssl.sh
 	@echo -e "----\e[34mCompleted\e[0m----"
 
-tls-simple: ## 🔐 start temporal cluster
+tls-simple-cluster: ## 🔐 start temporal cluster
 	@echo -e "----\e[34mStart $@\e[0m----" || true
 	@cd deployment/tls-simple && ./start-temporal.sh
 	@echo -e "----\e[34mCompleted\e[0m----"
