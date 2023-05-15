@@ -34,7 +34,7 @@
    "forwardPorts": [8233,7233,8000],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "scripts/postCreateCommand.sh",
+	"postCreateCommand": ".devcontainer/postCreateCommand.sh",
 
 	"customizations": {
 		"vscode": {
