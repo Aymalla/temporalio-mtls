@@ -39,6 +39,29 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+
 application {
-	mainClass = 'com.temporal.workflows.registercredit.Application'
+	mainClass = 'com.temporal.samples.helloworld.Application'
 }
+
+task(helloworld, dependsOn: 'classes', type: JavaExec) {
+   main = 'com.temporal.samples.helloworld.Application'
+   classpath = sourceSets.main.runtimeClasspath
+}
+
+task(approval, dependsOn: 'classes', type: JavaExec) {
+   main = 'com.temporal.samples.approval.Application'
+   classpath = sourceSets.main.runtimeClasspath
+}
+
+/**
+ * execute samples
+ * usage : 
+ * gradle execute -PmainClass=com.temporal.samples.helloworld.Application
+ * gradle execute -PmainClass=com.temporal.samples.approval.Application
+ */
+task execute(type: JavaExec) {
+    mainClass = findProperty("mainClass") ?: ""
+    classpath = sourceSets.main.runtimeClasspath
+}
+

@@ -35,3 +35,6 @@ replay_pid*
 *.key
 *.pfx
 *.srl
+
+# vscode
+.vscode

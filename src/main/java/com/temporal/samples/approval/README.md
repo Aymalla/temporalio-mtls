@@ -28,8 +28,8 @@ This repository contains a sample register credit workflow implementation using 
 - Start a new workflow instance:  GET "<http://localhost:8000/workflow/start>", the workflow instance unique identifier is returned as result
 - Navigate to Temporal dashboard UI "<http://localhost:8233/>"
 - Approval callback links will be logged in the temporal workflow history that can be accessed by dashboard
-  - B3 approval callback: <http://localhost:8000/workflow/approval/company/{workflowInstanceId}/Approved>
-  - B3 rejection callback: <http://localhost:8000/workflow/approval/company/{workflowInstanceId}/Rejected>
+  - Company approval callback: <http://localhost:8000/workflow/approval/company/{workflowInstanceId}/Approved>
+  - Company rejection callback: <http://localhost:8000/workflow/approval/company/{workflowInstanceId}/Rejected>
   - Custodian approval callback: <http://localhost:8000/workflow/approval/custodian/{workflowInstanceId}/Approved>
   - Custodian rejection callback: <http://localhost:8000/workflow/approval/custodian/{workflowInstanceId}/Rejected>
 - Workflow will wait for 3 minutes to get manual approvals; if not, the workflow will end with a timeout status
