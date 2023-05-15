@@ -1,0 +1,19 @@
+server:
+  port: 8000
+
+
+temporal:
+  version: 1.0.0
+  server:
+    hostname: 127.0.0.1
+    port: 7233
+    url: "${temporal.server.hostname}:${temporal.server.port}"
+  workflow:
+    taskqueue: MAIN_TASK_QUEUE
+    id: SamplesWorkflow
+
+api:
+  url: http://localhost:8000/api
+  companyApprovalUrl: http://localhost:8000/workflow/approval/company
+  custodianApprovalUrl: http://localhost:8000/workflow/approval/custodian
+
