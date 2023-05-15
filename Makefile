@@ -22,16 +22,20 @@ test: ## 🧪 Test an Application
 
 generate-certs-keyvault: ## 🔐 Generate the Certificates using Azure KeyVault
 	@echo -e "----\e[34mStart $@\e[0m----" || true
-	@cd scripts/certs && ./generate-test-certs-keyvault.sh
+	@cd deployment/certs && ./generate-test-certs-keyvault.sh
 	@echo -e "----\e[34mCompleted\e[0m----"
 
 generate-certs-openssl: ## 🔐 Generate the Certificates using Azure KeyVault
 	@echo -e "----\e[34mStart $@\e[0m----" || true
-	@cd scripts/certs && ./generate-test-certs-openssl.sh
+	@cd deployment/certs && ./generate-test-certs-openssl.sh
+	@echo -e "----\e[34mCompleted\e[0m----"
+
+tls-simple: ## 🔐 start temporal cluster
+	@echo -e "----\e[34mStart $@\e[0m----" || true
+	@cd deployment/tls-simple && ./start-temporal.sh
 	@echo -e "----\e[34mCompleted\e[0m----"
 
 clean: ## 🧹 Clean the working folders
 	@echo -e "----\e[34mStart $@\e[0m----" || true
-	@rm -rf scripts/certs/keyvault/certs
-	@rm -rf scripts/certs/openssl/certs
+	@rm -rf deployment/certs/certs
 	@echo -e "----\e[34mCompleted\e[0m----"

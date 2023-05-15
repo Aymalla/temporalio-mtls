@@ -46,7 +46,8 @@
 				"ms-kubernetes-tools.vscode-kubernetes-tools",
 				"SonarSource.sonarlint-vscode",
 				"vscjava.vscode-gradle",
-				"ms-vscode.makefile-tools"
+				"ms-vscode.makefile-tools",
+				"ms-azuretools.vscode-docker"
 			]
 		}
 	}
