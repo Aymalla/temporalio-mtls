@@ -30,6 +30,7 @@ If you are using mTLS, is completely up to you how to get the clientCert and cli
 - Start temporal cluster `make temporal-cluster-mtls`
 - Start workflow worker `make start-worker`
 - Start new helloworld workflow instance `http://localhost:8000/workflow/start`
+- Access Temporal dashboard UI to check running history `http://localhost:8080/namespaces/default/workflows`
 
 
 ## Resources
