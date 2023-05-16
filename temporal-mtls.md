@@ -1,10 +1,8 @@
-# Setup and configure temporal mTLS certificates using Azure Key-vault
+# Setup and configure a temporal cluster with mTLS enabled
 
 This document demonstrates the fundamental concepts and pieces needed to setup and configure temporal cluster TLS and use Azure Key Vault to generate and store the mTLS certificates.
 
 You can access the complete source code using [temporalio-mtls repository](https://github.com/Aymalla/temporalio-mtls)
-
-This sample using the self-certificate signed with custom CA for TLS setup, for production or public-facing environments a Trusted CA certificate must be used.
 
 ## Temporal Connection and Encryption
 
@@ -25,16 +23,16 @@ A customized configuration can be passed using either the [WithConfig](https://d
 
 See [TLS configuration reference](https://docs.temporal.io/references/configuration/#tls) for more details.
 
-If you are using mTLS, is completely up to you how to get the clientCert and clientKey pair into your code, whether it is reading from filesystem, secrets manager, or both. Just keep in mind that they are whitespace sensitive and some environment variable systems have been known to cause frustration because they modify whitespace.
+If you are using mTLS, is completely up to you how to get the clientCert and clientKey pair into your code, whether it is reading from filesystem, secrets manager, or both.
 
 ## Self-signed certificate vs Trusted CA-signed Certificate 
 
 **Self-signed certificates** are created, issued, and signed by the entities whose identities the certificates are meant to verify. This means that the individual developers or the companies who have created and/or own the website or software in question are, essentially, signing off on themselves. Furthermore, self-signed certificates are signed by their own private keys. This is yet another reason why they’re not publicly trusted certificates
 
-**CA-signed certificate**, on the other hand, is signed by a third-party, publicly trusted certificate authority (CA). The popular CAs are Sectigo (formerly Comodo CA), Symantec, DigiCert, Thawte, GeoTrust, GlobalSign, GoDaddy, and Entrust.  These entities are responsible for validating the person or organization that requests each certificate. [read more here](https://sectigostore.com/page/self-signed-certificate-vs-ca/)
+**CA-signed certificate**, on the other hand, is signed by a third-party, publicly trusted certificate authority (CA). The popular CAs are Sectigo, Symantec, DigiCert, Thawte, GeoTrust, GlobalSign, GoDaddy, and Entrust.  These entities are responsible for validating the person or organization that requests each certificate. [read more here](https://sectigostore.com/page/self-signed-certificate-vs-ca/)
 
 CA (Certificate Authority) has two types
-- ***Trusted CA:*** publicly trusted certificate authority (CA) to sign certificate for production environments [more details](https://en.wikipedia.org/wiki/Certificate_authority).
+- ***Trusted CA:*** publicly trusted certificate authority (CA) to issue and sign certificates for production environments [more details](https://en.wikipedia.org/wiki/Certificate_authority).
     - Azure key-vault supports (DigiCert - GlobalSign)
 - ***Custom CA:*** It is created locally by the company or developer to sign and verify the self-signed certificates for internal, development, and testing environments.
 
@@ -43,7 +41,7 @@ CA (Certificate Authority) has two types
 - Self-signed certificates are suitable for internal (intranet) sites, and sites used in testing environments.
 - CA certificates, on the other hand, are suitable for all public-facing websites and software. 
 
-*This sample is using a `self-signed certificate with a custom root CA` to configure TLS to secure network communication with and within Temporal cluster*
+*This sample is using a `self-signed certificate signed with a custom root CA` to configure TLS to secure network communication with and within Temporal cluster*, for production or public-facing environments a Trusted CA certificates must be used.
 
 ***Certificate generation tools***
 
@@ -57,16 +55,16 @@ CA (Certificate Authority) has two types
 ## Setup and start Temporal Cluster with TLS enabled
 
 To start a Temporal cluster environment with TLS enabled, three steps need to be executed in order
-- [Generate the required certificates](#generate-the-required-tls-certificates)
+- [Generate the required certificates](#generate-the-required-certificates)
 - [Deploy Temporal Cluster](#start-temporal-cluster)
 - [Start Temporal Worker](#start-temporal-worker-client)
 
-### Generate the required TLS certificates
+### 1. Generate the required certificates
 
 Temporal CA and End-entity certificates requirements is listed [here](https://docs.temporal.io/cloud/how-to-manage-certificates-in-temporal-cloud#certificate-requirements)
 
 The simplest temporal TLS environment requires three certificates
-- **CA certificate:** the certificate that is used for signing and verifying the cluster and client certificate
+- **CA certificate:** the certificate used for signing and verifying the cluster and client certificate
 - **Cluster certificate:** encrypting communication between nodes in the cluster 
 - **Client certificate:** encrypting communication between worker and the cluster front-end
 
@@ -74,11 +72,11 @@ The following diagram shows the flow of creating a new certificate using an Azur
 
 ![Create certificate using custom or non-integrated CA Provider](https://learn.microsoft.com/en-us/azure/key-vault/media/certificate-authority-1.png)
 
-Full script and configuration
+Certificates generation script and configuration
 - [generate-test-certs-keyvault.sh](deployment/certs/generate-test-certs-keyvault.sh)
-- CA [config](deployment/certs/ca.conf) and [policy]((deployment/certs/ca-cert-policy.json)) files
-- Cluster [config](deployment/certs/cluster.conf) and [policy]((deployment/certs/cluster-cert-policy.json)) files
-- Client [config](deployment/certs/client.conf) and [policy]((deployment/certs/client-cert-policy.json)) files
+- CA [config](deployment/certs/ca.conf) and [policy](deployment/certs/ca-cert-policy.json) files
+- Cluster [config](deployment/certs/cluster.conf) and [policy](deployment/certs/cluster-cert-policy.json) files
+- Client [config](deployment/certs/client.conf) and [policy](deployment/certs/client-cert-policy.json) files
 
 ```bash
 ###################################################
@@ -146,7 +144,7 @@ CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $KEY_VAULT --
 
 *More complex environment setup can be found in [temporal samples repository](https://github.com/temporalio/samples-server/tree/main/tls/tls-full)*
 
-### Start Temporal Cluster 
+### 2. Start Temporal Cluster 
 
 After generating the certificates, now we can start up the temporal cluster using
 - [docker-compose.yml](deployment/tls-simple/docker-compose.yml): contains definition for cluster nodes and configs
@@ -256,7 +254,7 @@ export TEMPORAL_LOCAL_CERT_DIR=../certs/certs
 docker-compose up
 ```
 
-### Start Temporal Worker (Client)  
+### 3. Start Temporal Worker (Client)  
 
 ```java
 
