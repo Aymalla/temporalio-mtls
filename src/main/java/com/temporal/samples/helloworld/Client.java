@@ -36,12 +36,6 @@ public class Client {
     @Value("${temporal.server.url}")
     private String temporalServerUrl;
 
-    @Value("${temporal.server.hostname}")
-    private String temporalServerHostName;
-
-    @Value("${temporal.server.port}")
-    private String temporalServerPort;
-
     @Value("${temporal.server.namespace}")
     private String temporalServerNamespace;
 
@@ -57,8 +51,6 @@ public class Client {
 
         temporalTaskQueue = env.getProperty("temporal.workflow.taskqueue");
         temporalServerUrl = env.getProperty("temporal.server.url");
-        temporalServerHostName = env.getProperty("temporal.server.hostname");
-        temporalServerPort = env.getProperty("temporal.server.port");
         temporalVersion = env.getProperty("temporal.version");
         temporalServerNamespace = env.getProperty("temporal.server.namespace");
         temporalServerCertAuthorityName = env.getProperty("temporal.server.certAuthorityName");
@@ -74,7 +66,7 @@ public class Client {
         var tlsBuilder = TlsChannelCredentials.newBuilder();
         tlsBuilder.keyManager(clientCert, clientKey);
         tlsBuilder.trustManager(caCert);
-        var channel = Grpc.newChannelBuilderForAddress(temporalServerHostName, Integer.parseInt(temporalServerPort), tlsBuilder.build())
+        var channel = Grpc.newChannelBuilder(temporalServerUrl, tlsBuilder.build())
                 .overrideAuthority(temporalServerCertAuthorityName)
                 .build();
 
