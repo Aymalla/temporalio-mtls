@@ -3,7 +3,7 @@
 # In a production environment such artifacts should be genrated
 # by a proper certificate authority and handled in a secure manner.
 
-keyVault="kv-aym"
+keyVault="kv-aym1"
 CERTS_DIR=./certs
 rm -rf $CERTS_DIR
 mkdir $CERTS_DIR
@@ -76,11 +76,11 @@ echo Root CA: Generate a private key and a certificate
 generate_root_ca_cert ca $CERTS_DIR
 
 echo Cluster: Generate a private key and a certificate
-generate_cert cluster $CERTS_DIR $CERTS_DIR req_ext
+generate_cert cluster $CERTS_DIR $CERTS_DIR/ca req_ext
 
 # Generate a private key and a certificate client
 echo Client: Generate a private key and a certificate
-generate_cert client $CERTS_DIR $CERTS_DIR req_ext
+generate_cert client $CERTS_DIR $CERTS_DIR/ca req_ext
 
 rm -rf $TEMP_DIR
 
