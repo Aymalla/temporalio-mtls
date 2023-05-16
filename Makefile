@@ -22,11 +22,6 @@ start-worker: ## 🏃 start temporal worker with mlts support
 	@curl http://localhost:8000/workflow/start
 	@echo -e "----\e[34mCompleted\e[0m----"
 
-start-temporal-dev: ## 📦start temporal dev server
-	@echo -e "----\e[34mStart $@\e[0m----" || true
-	@temporal server start-dev
-	@echo -e "----\e[34mCompleted\e[0m----"
-
 start-temporal-cluster-mtls: ## 📦 start temporal cluster
 	@echo -e "----\e[34mStart $@\e[0m----" || true
 	@cd deployment/tls-simple && ./start-temporal.sh

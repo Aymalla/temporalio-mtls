@@ -13,6 +13,8 @@ A customized configuration can be passed using either the [WithConfig](https://d
 - Azure CLI
 - openssl
 
+`**Note:** In case the dev-container is used, all dependencies are already installed.`
+
 ## Get Started
 
 - Clone repository `git clone https://github.com/Aymalla/temporalio-mtls.git`
@@ -33,7 +35,6 @@ help                        💬 This help message :)
 keyvault-certs              🔐 Generate the Certificates using Azure KeyVault
 openssl-certs               🔐 Generate the Certificates using Openssl
 start-worker                🏃 start temporal worker with mlts support
-start-temporal-dev          📦 start temporal dev server
 start-temporal-cluster-mtls 📦 start temporal cluster with mTLS
 clean                       🧹 Clean the working folders created during build/demo
 ```

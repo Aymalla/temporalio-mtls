@@ -10,7 +10,9 @@ import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.WorkerFactory;
 import lombok.Getter;
 import lombok.Setter;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -40,31 +42,45 @@ public class Client {
     @Value("${temporal.server.port}")
     private String temporalServerPort;
 
+    @Value("${temporal.server.namespace}")
+    private String temporalServerNamespace;
+
+    @Value("${temporal.server.certAuthorityName}")
+    private String temporalServerCertAuthorityName;
+
     @Value("${temporal.version}")
     private String temporalVersion;
 
     private WorkflowClient workflowClient;
 
-    public Client() throws IOException {
+    public Client(Environment env) throws IOException {
+
+        temporalTaskQueue = env.getProperty("temporal.workflow.taskqueue");
+        temporalServerUrl = env.getProperty("temporal.server.url");
+        temporalServerHostName = env.getProperty("temporal.server.hostname");
+        temporalServerPort = env.getProperty("temporal.server.port");
+        temporalVersion = env.getProperty("temporal.version");
+        temporalServerNamespace = env.getProperty("temporal.server.namespace");
+        temporalServerCertAuthorityName = env.getProperty("temporal.server.certAuthorityName");
 
         // Load your client certificate, which should look like:
-        InputStream clientCert = new FileInputStream("deployment/certs/certs/client.pem");
+        InputStream clientCert = new FileInputStream(env.getProperty("temporal.tls.client.certPath"));
         // PKCS8 client key, which should look like:
-        InputStream clientKey = new FileInputStream("deployment/certs/certs/client.key");
+        InputStream clientKey = new FileInputStream(env.getProperty("temporal.tls.client.keyPath"));
         // certification Authority signing certificate
-        InputStream caCert = new FileInputStream("deployment/certs/certs/ca.cert");
+        InputStream caCert = new FileInputStream(env.getProperty("temporal.tls.ca.certPath"));
 
+        // Create a TLS Channel Credential Builder : https://community.temporal.io/t/how-to-disable-host-name-verification/2808/8
         var tlsBuilder = TlsChannelCredentials.newBuilder();
         tlsBuilder.keyManager(clientCert, clientKey);
         tlsBuilder.trustManager(caCert);
-        var channel = Grpc.newChannelBuilderForAddress("localhost", Integer.parseInt("7233"), tlsBuilder.build())
-                .overrideAuthority("tls-sample")
+        var channel = Grpc.newChannelBuilderForAddress(temporalServerHostName, Integer.parseInt(temporalServerPort), tlsBuilder.build())
+                .overrideAuthority(temporalServerCertAuthorityName)
                 .build();
 
         /*
          * Get a Workflow service temporalClient which can be used to start, Signal, and
-         * Query Workflow Executions.
-         * This gRPC stubs wrapper talks to the Temporal service.
+         * Query Workflow Executions. This gRPC stubs wrapper talks to the Temporal service.
          */
         WorkflowServiceStubs service = WorkflowServiceStubs.newServiceStubs(
                 WorkflowServiceStubsOptions
