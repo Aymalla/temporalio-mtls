@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 # This scripts generates test keys and certificates for the sample.
-# In a production environment such artifacts should be genrated
+# In a production environment such artifacts should be generated
 # by a proper certificate authority and handled in a secure manner.
 
-keyVault="kv-aym1"
+# Checking key vault parameter
+keyVault="$1"
+if [[ $keyVault == "" ]]; then
+    echo "Error: Missing key vault parameter"
+    exit 1
+elif ! az keyvault show -n $keyVault -o none; then
+    exit 1
+fi
+
 CERTS_DIR=./certs
 rm -rf $CERTS_DIR
 mkdir $CERTS_DIR
@@ -83,4 +91,3 @@ echo Client: Generate a private key and a certificate
 generate_cert client $CERTS_DIR $CERTS_DIR/ca req_ext
 
 rm -rf $TEMP_DIR
-
