@@ -30,7 +30,7 @@ A customized configuration can be passed using either the
 The caller also needs `Key Vault Certificates Officer` and `Key Vault Secrets User` RBAC roles
 to create, import certificates and download private keys.
 - Login to your subscription `az login`
-- Generate certificates for mTLS using Azure Key Vault `make kv=<Key Vault Name> keyvault-certs`.
+- Generate certificates for mTLS using Azure Key Vault `make keyvault-certs kv=<Key Vault Name>`.
 - Start temporal cluster `make start-temporal-cluster-mtls`.
 - Start workflow worker `make start-worker`.
 - Trigger new helloworld workflow instance `http://localhost:8000/workflow/start`.
