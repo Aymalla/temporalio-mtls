@@ -15,13 +15,13 @@ A customized configuration can be passed using either the
 
 ## Prerequisites
 
-- Java JDK 17+
-- Docker
-- Azure CLI
-- openssl
-- jq
+- [Java JDK 17+](https://openjdk.org/install/)
+- [Docker / Docker Compose](https://docs.docker.com/engine/install/)
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+- [OpenSSL](https://www.openssl.org/source/)
+- [Jq](https://stedolan.github.io/jq/)
 
-`**Note:** In case the dev-container is used, all dependencies are already installed.`
+`**Note:** In the case of using the dev-container and Vscode, all dependencies are already installed.`
 
 ## Get Started
 

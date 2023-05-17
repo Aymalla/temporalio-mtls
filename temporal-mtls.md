@@ -1,17 +1,22 @@
-# Setup and configure a temporal cluster with mTLS enabled
+# Setup and configure a temporal cluster with mTLS certificates using Azure Key-vault
 
 This document demonstrates the fundamental concepts and pieces needed to setup and configure temporal cluster TLS and use Azure Key Vault to generate and store the mTLS certificates.
 
-You can access the complete source code using [temporalio-mtls repository](https://github.com/Aymalla/temporalio-mtls)
+*The sample is using a self-signed certificate signed with a custom CA for TLS setup. For production or public-facing environments, a trusted CA certificate must be used.*
 
-## Temporal Connection and Encryption
+the complete source code here [temporalio-mtls repository](https://github.com/Aymalla/temporalio-mtls).
 
-Temporal Workers and Clients connect with your Temporal Cluster via gRPC, and must be configured securely for production. There are three main features to know:
+*This sample using the self-certificate signed with custom CA for TLS setup, for production or public-facing environments a Trusted CA certificate must be used.*
 
-- Namespaces help isolate code from each other
-- TLS Encryption helps encrypt code in transit
-- Data Converter helps encrypt code at rest (available soon)
-Temporal Server internally has other Security features, particularly Authorization.
+## Temporal Connection and Encryption overview
+
+Temporal workers and clients connect with your Temporal cluster via gRPC and must be configured securely for production. There are three main security features to know:
+
+- Namespaces: help isolate code from each other
+- TLS Encryption: helps encrypt data in transit
+- Data Converter: helps encrypt data at rest
+
+Temporal Server internally has other security features, particularly Authorization.
 
 ## Encryption in transit with mTLS (Mutual Transport Layer Security)
 
@@ -19,13 +24,16 @@ Temporal supports Mutual Transport Layer Security (mTLS) as a way of encrypting 
 
 - `internode:` Configuration for encrypting communication between nodes in the cluster.
 - `frontend:` Configuration for encrypting the Frontend's public endpoints.
-A customized configuration can be passed using either the [WithConfig](https://docs.temporal.io/references/server-options#withconfig) or [WithConfigLoader](https://docs.temporal.io/references/server-options#withconfig) Server options.
+
+A customized configuration can be passed using either
+[WithConfig](https://docs.temporal.io/references/server-options#withconfig) or 
+[WithConfigLoader](https://docs.temporal.io/references/server-options#withconfig) Server options.
 
 See [TLS configuration reference](https://docs.temporal.io/references/configuration/#tls) for more details.
 
 If you are using mTLS, is completely up to you how to get the clientCert and clientKey pair into your code, whether it is reading from filesystem, secrets manager, or both.
 
-## Self-signed certificate vs Trusted CA-signed Certificate 
+## Self-signed vs Trusted CA-signed Certificates
 
 **Self-signed certificates** are created, issued, and signed by the entities whose identities the certificates are meant to verify. This means that the individual developers or the companies who have created and/or own the website or software in question are, essentially, signing off on themselves. Furthermore, self-signed certificates are signed by their own private keys. This is yet another reason why they’re not publicly trusted certificates
 
@@ -55,13 +63,13 @@ CA (Certificate Authority) has two types
 ## Setup and start Temporal Cluster with TLS enabled
 
 To start a Temporal cluster environment with TLS enabled, three steps need to be executed in order
-- [Generate the required certificates](#generate-the-required-certificates)
-- [Deploy Temporal Cluster](#start-temporal-cluster)
+- [Generate the required certificates](#generate-the-required-tls-certificates)
+- [Deploy and start a temporal Cluster](#start-temporal-cluster)
 - [Start Temporal Worker](#start-temporal-worker-client)
 
-### 1. Generate the required certificates
+### 1. Generate the required TLS certificates
 
-Temporal CA and End-entity certificates requirements is listed [here](https://docs.temporal.io/cloud/how-to-manage-certificates-in-temporal-cloud#certificate-requirements)
+Temporal has some requirements from the CA and End-entity certificates listed [here](https://docs.temporal.io/cloud/how-to-manage-certificates-in-temporal-cloud#certificate-requirements)
 
 The simplest temporal TLS environment requires three certificates
 - **CA certificate:** the certificate used for signing and verifying the cluster and client certificate
@@ -72,13 +80,15 @@ The following diagram shows the flow of creating a new certificate using an Azur
 
 ![Create certificate using custom or non-integrated CA Provider](https://learn.microsoft.com/en-us/azure/key-vault/media/certificate-authority-1.png)
 
-Certificates generation script and configuration
-- [generate-test-certs-keyvault.sh](deployment/certs/generate-test-certs-keyvault.sh)
+the list of configuration needed to create the new certs
 - CA [config](deployment/certs/ca.conf) and [policy](deployment/certs/ca-cert-policy.json) files
 - Cluster [config](deployment/certs/cluster.conf) and [policy](deployment/certs/cluster-cert-policy.json) files
 - Client [config](deployment/certs/client.conf) and [policy](deployment/certs/client-cert-policy.json) files
 
 ```bash
+
+# generate-test-certs-keyvault.sh
+
 ###################################################
 # Create a custom CA certificate to be used for 
 # signing both cluster and client the certificate
@@ -104,6 +114,9 @@ CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $KEY_VAULT --
 ```
 
 ```bash
+
+# generate-test-certs-keyvault.sh
+
 ###################################################
 # Create a certificate signed by the custom CA certificate generated above
 # The same script is used to generate both the cluster and client certs
@@ -142,9 +155,9 @@ CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $KEY_VAULT --
 
 ```
 
-*More complex environment setup can be found in [temporal samples repository](https://github.com/temporalio/samples-server/tree/main/tls/tls-full)*
+*More advanced environment setup can be found in [temporal samples repository](https://github.com/temporalio/samples-server/tree/main/tls/tls-full)*
 
-### 2. Start Temporal Cluster 
+### 2. Deploy and start Temporal Cluster
 
 After generating the certificates, now we can start up the temporal cluster using
 - [docker-compose.yml](deployment/tls-simple/docker-compose.yml): contains definition for cluster nodes and configs
