@@ -2,9 +2,11 @@ package com.temporal.samples.helloworld;
 
 import io.grpc.Grpc;
 import io.grpc.TlsChannelCredentials;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
+import io.temporal.serviceclient.SimpleSslContextBuilder;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.WorkerFactory;
@@ -23,7 +25,14 @@ import com.temporal.samples.helloworld.workflows.HelloActivityImpl;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.concurrent.CompletableFuture;
+
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
 @Service
 @Getter
@@ -47,7 +56,7 @@ public class Client {
 
     private WorkflowClient workflowClient;
 
-    public Client(Environment env) throws IOException {
+    public Client(Environment env) throws Exception {
 
         temporalTaskQueue = env.getProperty("temporal.workflow.taskqueue");
         temporalServerUrl = env.getProperty("temporal.server.url");
@@ -57,29 +66,44 @@ public class Client {
 
         // Load your client certificate, which should look like:
         InputStream clientCert = new FileInputStream(env.getProperty("temporal.tls.client.certPath"));
+        
         // PKCS8 client key, which should look like:
         InputStream clientKey = new FileInputStream(env.getProperty("temporal.tls.client.keyPath"));
-        // certification Authority signing certificate
+        
+        // Certification Authority signing certificate
         InputStream caCert = new FileInputStream(env.getProperty("temporal.tls.ca.certPath"));
 
-        // Create a TLS Channel Credential Builder : https://community.temporal.io/t/how-to-disable-host-name-verification/2808/8
-        var tlsBuilder = TlsChannelCredentials.newBuilder();
-        tlsBuilder.keyManager(clientCert, clientKey);
-        tlsBuilder.trustManager(caCert);
-        var channel = Grpc.newChannelBuilder(temporalServerUrl, tlsBuilder.build())
-                .overrideAuthority(temporalServerCertAuthorityName)
-                .build();
+        // Create Trust Manager
+        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        trustStore.load(null, null);
+        X509Certificate certificate = (X509Certificate)CertificateFactory
+            .getInstance("X509")
+            .generateCertificate(caCert);
+        trustStore.setCertificateEntry("ca", certificate);
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory
+            .getInstance(TrustManagerFactory
+            .getDefaultAlgorithm());
+        trustManagerFactory.init(trustStore);
+        TrustManager trustManager = trustManagerFactory.getTrustManagers()[0];
+
+        // Create SslContext
+        SslContext sslContext = SimpleSslContextBuilder
+            .forPKCS8(clientCert, clientKey)
+            .setTrustManager(trustManager)
+            .build();
 
         /*
          * Get a Workflow service temporalClient which can be used to start, Signal, and
          * Query Workflow Executions. This gRPC stubs wrapper talks to the Temporal service.
          */
         WorkflowServiceStubs service = WorkflowServiceStubs.newServiceStubs(
-                WorkflowServiceStubsOptions
-                        .newBuilder()
-                        .setChannel(channel)
-                        // .setTarget(temporalServerUrl)
-                        .build());
+            WorkflowServiceStubsOptions
+                .newBuilder()
+                .setSslContext(sslContext)
+                .setTarget(temporalServerUrl)
+                .setChannelInitializer(c -> c
+                    .overrideAuthority(temporalServerCertAuthorityName))
+                .build());
 
         // WorkflowClient can be used to start, signal, query, cancel, and terminate
         // Workflows.

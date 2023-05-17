@@ -8,7 +8,7 @@ help: ## 💬 This help message :)
 
 keyvault-certs: ## 🔐 Generate the Certificates using Azure KeyVault
 	@echo -e "----\e[34mStart $@\e[0m----" || true
-	@cd deployment/certs && ./generate-test-certs-keyvault.sh
+	@cd deployment/certs && ./generate-test-certs-keyvault.sh $(kv)
 	@echo -e "----\e[34mCompleted\e[0m----"
 
 openssl-certs: ## 🔐 Generate the Certificates using openssl
@@ -18,7 +18,7 @@ openssl-certs: ## 🔐 Generate the Certificates using openssl
 
 start-worker: ## 🏃 start temporal worker with mlts support
 	@echo -e "----\e[34mStart $@\e[0m----" || true
-	@gradle run
+	@./gradlew run
 	@curl http://localhost:8000/workflow/start
 	@echo -e "----\e[34mCompleted\e[0m----"
 
