@@ -34,7 +34,7 @@ generate_root_ca_cert() {
     # signing both cluster and client the certificate
     #########################################################
 
-    # Query a OAuth2 token
+    # Query an OAuth2 token
     token=$(curl -X POST https://login.microsoftonline.com/$tenantId/oauth2/token \
         -d "grant_type=client_credentials&client_id=${clientId}&client_secret=${clientSecret}&resource=https://vault.azure.net" | jq -r '.access_token')
 
