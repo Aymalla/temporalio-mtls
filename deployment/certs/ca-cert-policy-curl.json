@@ -1,0 +1,43 @@
+﻿{
+  "policy": {
+    "issuer": {
+      "name": "Self"
+    },
+    "key_props": {
+      "curve": null,
+      "exportable": true,
+      "kty": "RSA",
+      "key_size": 4096,
+      "reuse_key": true
+    },
+    "lifetime_actions": [
+      {
+        "trigger": {
+          "days_before_expiry": 90
+        },
+        "action": {
+          "action_type": "AutoRenew"
+        }
+      }
+    ],
+    "secret_props": {
+      "contentType": "application/x-pem-file"
+    },
+    "x509_props": {
+      "subject": "OU=Test CA Corporation,O=Test CA Corporation,L=London,S=Greater London,C=UK",
+      "key_usage": [
+        "cRLSign",
+        "dataEncipherment",
+        "digitalSignature",
+        "keyEncipherment",
+        "keyAgreement",
+        "keyCertSign"
+      ],
+      "validity_months": 12,
+      "basic_constraints": {
+        "ca": true,
+        "path_len_constraint": 1
+      }
+    }
+  }
+}
