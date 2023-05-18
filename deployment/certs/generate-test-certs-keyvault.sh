@@ -7,18 +7,12 @@
 set -e
 
 # Check for required parameters
-if [ $1 == "" ] || [ $2 == "" ] || [ $3 == "" ] || [ $4 == "" ]; then
-    echo "Error missing required parameters: make keyvault-certs sid=<Client ID> spwd=<Client Secret> tid=<Tenant ID> kv=<Key Vault Name>"
+if [[ $1 == "" ]]; then
+    echo "Error missing required parameters: make keyvault-certs kv=<Key Vault Name>"
     exit 1
 fi
 
-# Login to Azure
-clientId="$1"
-clientSecret="$2"
-tenantId="$3"
-az login --service-principal -u $clientId -p $clientSecret --tenant $tenantId
-
-keyVault="$4"
+keyVault="$1"
 CERTS_DIR=./certs
 rm -rf $CERTS_DIR
 mkdir $CERTS_DIR
@@ -34,14 +28,13 @@ generate_root_ca_cert() {
     # signing both cluster and client the certificate
     #########################################################
 
-    # Query an OAuth2 token
-    token=$(curl -X POST https://login.microsoftonline.com/$tenantId/oauth2/token \
-        -d "grant_type=client_credentials&client_id=${clientId}&client_secret=${clientSecret}&resource=https://vault.azure.net" | jq -r '.access_token')
-
-    # Create a new certificate in Key Vault
-    curl -X POST "https://$keyVault.vault.azure.net/certificates/$certName/create?api-version=7.2" \
-        -H "Authorization: Bearer $token" -H "content-type: application/json" \
-        --data "@$certName-cert-policy-curl.json"
+    az rest \
+        --method post \
+        --body @$certName-cert-policy-rest.json \
+        --resource "https://vault.azure.net" \
+        --headers '{"content-type":"application/json"}' \
+        --uri "https://$keyVault.vault.azure.net/certificates/$certName/create" \
+        --uri-parameters 'api-version=7.2'
 
     # Wait for cert to be ready
     status="inProgress"

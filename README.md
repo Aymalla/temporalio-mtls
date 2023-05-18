@@ -20,23 +20,21 @@ A customized configuration can be passed using either the
 - [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 - [OpenSSL](https://www.openssl.org/source/)
 - [Jq](https://stedolan.github.io/jq/)
-- [curl](https://curl.se/)
 
-`**Note:** In the case of using the dev-container and Vscode, all dependencies are already installed.`
+`**Note:** In the case of using the dev-container and VSCode, all dependencies are already installed.`
 
 ## Get Started
 
-- Clone repository `git clone https://github.com/Aymalla/temporalio-mtls.git`.
-- An Azure Key Vault needs to be created to store certificates. You also need to
-[create a service principal](https://learn.microsoft.com/en-us/cli/azure/ad/sp?view=azure-cli-latest)
-and assign it the `Key Vault Certificates Officer` and `Key Vault Secrets User` RBAC roles so that it
-can be used in the scripts to create, import and download certificates.
-- To generate certificates for mTLS using Azure Key Vault:
-`make keyvault-certs sid=<Client ID> spwd=<Client Secret> tid=<Tenant ID> kv=<Key Vault Name>`.
-- To start temporal cluster: `make start-temporal-cluster-mtls`.
-- To start workflow worker: `make start-worker`.
-- To trigger a new helloworld workflow instance: `http://localhost:8000/workflow/start`.
-- To access Temporal dashboard UI to check running history:
+- Clone this repository: `git clone https://github.com/Aymalla/temporalio-mtls.git`.
+- Create an Azure Key Vault to store certificates. You also need the `Key Vault Certificates Officer`
+and `Key Vault Secrets User` RBAC roles to run the scripts that create, import and download certificates.
+- Sign in to your Azure subscription: `az login`.
+- Generate certificates for mTLS using Azure Key Vault:
+`make keyvault-certs kv=<Key Vault Name>`.
+- Start the temporal cluster: `make start-temporal-cluster-mtls`.
+- Start the workflow worker: `make start-worker`.
+- Trigger a new helloworld workflow instance: `http://localhost:8000/workflow/start`.
+- Access Temporal dashboard UI to check running history:
 `http://localhost:8080/namespaces/default/workflows`.
 
 ## Make file
