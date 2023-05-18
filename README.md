@@ -21,20 +21,20 @@ A customized configuration can be passed using either the
 - [OpenSSL](https://www.openssl.org/source/)
 - [Jq](https://stedolan.github.io/jq/)
 
-`**Note:** In the case of using the dev-container and Vscode, all dependencies are already installed.`
+`**Note:** In the case of using the dev-container and VSCode, all dependencies are already installed.`
 
 ## Get Started
 
-- Clone repository `git clone https://github.com/Aymalla/temporalio-mtls.git`.
-- An Azure Key Vault need to be created to store certificates.
-(The caller also needs `Key Vault Certificates Officer` and `Key Vault Secrets User` RBAC roles).
-to create, import certificates and download private keys.
-- Using Azure CLI Login to your subscription `az login`.
-- Generate certificates for mTLS using Azure Key Vault `make keyvault-certs kv=<Key Vault Name>`.
-- Start temporal cluster `make start-cluster-mtls`.
-- Start workflow worker `make start-worker`.
-- Trigger new helloworld workflow instance `http://localhost:8000/workflow/start`.
-- Access Temporal dashboard UI to check running history
+- Clone this repository: `git clone https://github.com/Aymalla/temporalio-mtls.git`.
+- Create an Azure Key Vault to store certificates. You also need the `Key Vault Certificates Officer`
+and `Key Vault Secrets User` RBAC roles to run the scripts that create, import and download certificates.
+- Sign in to your Azure subscription: `az login`.
+- Generate certificates for mTLS using Azure Key Vault:
+`make keyvault-certs kv=<Key Vault Name>`.
+- Start the temporal cluster: `make start-cluster-mtls`.
+- Start the workflow worker: `make start-worker`.
+- Trigger a new helloworld workflow instance: `http://localhost:8000/workflow/start`.
+- Access Temporal dashboard UI to check running history:
 `http://localhost:8080/namespaces/default/workflows`.
 
 ## Make file
@@ -47,7 +47,7 @@ help                        💬 This help message :)
 keyvault-certs              🔐 Generate the Certificates using Azure Key Vault
 openssl-certs               🔐 Generate the Certificates using Openssl
 start-worker                🏃 start temporal worker with mlts support
-start-temporal-cluster-mtls 📦 start temporal cluster with mTLS
+start-cluster-mtls          📦 start temporal cluster with mTLS
 clean                       🧹 Clean the working folders created during build/demo
 ```
 

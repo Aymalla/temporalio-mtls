@@ -3,15 +3,16 @@
 # In a production environment such artifacts should be generated
 # by a proper certificate authority and handled in a secure manner.
 
-# Checking key vault parameter
-keyVault="$1"
-if [[ $keyVault == "" ]]; then
-    echo "Error: Missing key vault parameter"
-    exit 1
-elif ! az keyvault show -n $keyVault -o none; then
+# Exit on errors
+set -e
+
+# Check for required parameters
+if [[ $1 == "" ]]; then
+    echo "Error missing required parameters: make keyvault-certs kv=<Key Vault Name>"
     exit 1
 fi
 
+keyVault="$1"
 CERTS_DIR=./certs
 rm -rf $CERTS_DIR
 mkdir $CERTS_DIR
@@ -20,26 +21,36 @@ mkdir $TEMP_DIR
 
 generate_root_ca_cert() {
     local certName=$1
+    local certDir=$2
 
-    ###########################
+    #########################################################
     # Create a custom CA certificate to be used for 
     # signing both cluster and client the certificate
-    ###########################
+    #########################################################
 
-    # Create custom CA-Certificate in Key-Vault
-    #CSR=$(az keyvault certificate create --vault-name $keyVault --name $certName --policy "@$certName-cert-policy.json" | jq -r '.csr')
+    az rest \
+        --method post \
+        --body @$certName-cert-policy-rest.json \
+        --resource "https://vault.azure.net" \
+        --headers '{"content-type":"application/json"}' \
+        --uri "https://$keyVault.vault.azure.net/certificates/$certName/create" \
+        --uri-parameters 'api-version=7.2'
 
-    # generate the CA private key
-    openssl genrsa -out $CERTS_DIR/$certName.key 4096
-    
-    # generate the CA certificate
-    openssl req -new -x509 -key $CERTS_DIR/$certName.key -sha256 -subj "/OU=Test CA Corporation/O=Test CA Corporation/L=London/S=Greater London/C=UK" -days 365 -out $CERTS_DIR/$certName.cert
-    
-    # generate the CA certificate .pfx file
-    openssl pkcs12 -export -out "$CERTS_DIR/$certName.pfx" -inkey "$CERTS_DIR/$certName.key" -in "$CERTS_DIR/$certName.cert" -keypbe NONE -certpbe NONE -passout pass:
-    
-    # Import .pfx into Key-Vault to be safely stored and used by the application
-    CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $keyVault --name $certName --file $CERTS_DIR/$certName.pfx)
+    # Wait for cert to be ready
+    status="inProgress"
+    while [ "$status" != "completed" ]
+    do
+        status=$(az keyvault certificate pending show --vault-name=$keyVault --name=$certName --query status --output tsv)
+        echo $status
+        sleep 1
+    done
+
+    # Download the certificate from Key Vault
+    az keyvault secret download --vault-name $keyVault --name $certName --file "$certDir/$certName.pem"
+
+    # Export cert and key
+    openssl rsa -in "$certDir/$certName.pem" -out "$certDir/$certName.key"
+    openssl x509 -in "$certDir/$certName.pem" -out "$certDir/$certName.cert"
 }
 
 generate_cert() {
@@ -49,11 +60,11 @@ generate_cert() {
     local exts=$4
     local no_chain_opt=$5
 
-    ###################################################
+    #################################################################################
     # Create a certificate signed by the custom CA certificate generated above
     # The same script is used to generate both the cluster and client certs
     # https://learn.microsoft.com/en-us/azure/key-vault/certificates/create-certificate-signing-request?tabs=azure-portal
-    ###################################################
+    #################################################################################
 
     # Create a new certificate in Key-Vault
     CSR=$(az keyvault certificate create --vault-name $keyVault --name $certName --policy "@$certName-cert-policy.json" | jq -r '.csr')
