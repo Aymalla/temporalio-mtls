@@ -1,4 +1,4 @@
-# Encryption in transit with mTLS
+# Temporal encryption in transit using mTLS
 
 Temporal supports Mutual Transport Layer Security (mTLS) as a way of encrypting network traffic
 between the services of a cluster and also between application processes and a Cluster.
@@ -53,6 +53,7 @@ clean                       🧹 Clean the working folders created during build/
 
 ## Resources
 
+- [Temporal mTLS](./temporal-mtls.md)
 - [Temporal Java Samples](https://github.com/temporalio/samples-java)
 - [Temporal Server Samples](https://github.com/temporalio/samples-server/tree/main/tls/tls-simple)
 - [Temporal Platform security features](https://docs.temporal.io/security?lang=java)
