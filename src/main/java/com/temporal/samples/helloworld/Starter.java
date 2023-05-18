@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * This controller act as Workflow manager that support workflow related
+ * This controller act as Http trigger Workflow manager that support workflow related
  * operations like (start - signal - getStatus)
  */
 @RestController

@@ -19,15 +19,17 @@ mkdir $CERTS_DIR
 TEMP_DIR=$CERTS_DIR/temp
 mkdir $TEMP_DIR
 
+#########################################################
+# Create a custom CA certificate to be used for 
+# signing both cluster and client the certificate
+#########################################################
 generate_root_ca_cert() {
     local certName=$1
     local certDir=$2
 
-    #########################################################
-    # Create a custom CA certificate to be used for 
-    # signing both cluster and client the certificate
-    #########################################################
-
+    # az rest is used instead of az keyvault certificate create 
+    # because the latter does not support creating a CA self-signed certificate
+    # https://github.com/Azure/azure-cli/issues/18178
     az rest \
         --method post \
         --body @$certName-cert-policy-rest.json \
@@ -41,30 +43,30 @@ generate_root_ca_cert() {
     while [ "$status" != "completed" ]
     do
         status=$(az keyvault certificate pending show --vault-name=$keyVault --name=$certName --query status --output tsv)
-        echo $status
         sleep 1
     done
 
     # Download the certificate from Key Vault
     az keyvault secret download --vault-name $keyVault --name $certName --file "$certDir/$certName.pem"
 
-    # Export cert and key
-    openssl rsa -in "$certDir/$certName.pem" -out "$certDir/$certName.key"
+    # Export private key
+    openssl pkey -in "$CERTS_DIR/$certName.pem" -out "$CERTS_DIR/$certName.key"
+
+    # Export certificate
     openssl x509 -in "$certDir/$certName.pem" -out "$certDir/$certName.cert"
 }
-
-generate_cert() {
-    local certName=$1
-    local dir=$2
-    local ca=$3
-    local exts=$4
-    local no_chain_opt=$5
 
     #################################################################################
     # Create a certificate signed by the custom CA certificate generated above
     # The same script is used to generate both the cluster and client certs
     # https://learn.microsoft.com/en-us/azure/key-vault/certificates/create-certificate-signing-request?tabs=azure-portal
     #################################################################################
+    generate_cert() {
+    local certName=$1
+    local dir=$2
+    local ca=$3
+    local exts=$4
+    local no_chain_opt=$5
 
     # Create a new certificate in Key-Vault
     CSR=$(az keyvault certificate create --vault-name $keyVault --name $certName --policy "@$certName-cert-policy.json" | jq -r '.csr')
@@ -74,32 +76,63 @@ generate_cert() {
     echo -e $CSR_FILE_CONTENT >> "$TEMP_DIR/$certName.csr"
 
     # Download the private key from Key-Vault in PEM Format
-    az keyvault secret download --vault-name $keyVault --name $certName --file "$CERTS_DIR/$certName.key"
+    az keyvault secret download --vault-name $keyVault --name $certName --file "$CERTS_DIR/$certName.pem"
+
+    # Export private key
+    openssl pkey -in "$CERTS_DIR/$certName.pem" -out "$CERTS_DIR/$certName.key"
 
     # Create the signed certificate using the downloaded CSR (certificate signing request)
-    openssl x509 -req -in $TEMP_DIR/$certName.csr -CA $ca.cert -CAkey $ca.key -sha256 -CAcreateserial -out $dir/$certName.pem -days 365 -extfile $certName.conf -extensions $exts
-    local chain_file="$dir/$certName.pem"
+    openssl x509 -req -in $TEMP_DIR/$certName.csr -CA $ca.cert -CAkey $ca.key -sha256 -CAcreateserial -out $CERTS_DIR/$certName.cert -days 365 -extfile $certName.conf -extensions $exts
+    local chain_file="$CERTS_DIR/$certName.cert"
     if [[ $no_chain_opt != no_chain ]]; then
-        chain_file="$dir/$certName-chain.pem"
-        cat $dir/$certName.pem $ca.cert > $chain_file
+        chain_file="$CERTS_DIR/$certName-chain.cert"
+        cat $CERTS_DIR/$certName.cert $ca.cert > $chain_file
     fi
 
-    # generate the certificate .pfx (Personal Information Exchange) file which is PKCS 12 archive file format
-    # "-keypbe NONE -certpbe NONE -passout pass:" exports into an unencrypted .pfx archive (for testing only)
-    openssl pkcs12 -export -out $dir/$certName.pfx -inkey $dir/$certName.key -in $chain_file -keypbe NONE -certpbe NONE -passout pass:
+    # Generate the updated pem file with both cert and key to be imported into the Key-Vault
+    cat "$CERTS_DIR/$certName.key" $chain_file > "$CERTS_DIR/$certName.pem"
 
-    # Import .pfx into Key-Vault to be safely stored and used by the application
-    CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $keyVault --name $certName --file $dir/$certName.pfx)
+    # Import new pem into the Key-Vault to be safely stored and used by the application
+    CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $keyVault --name $certName --file "$CERTS_DIR/$certName.pem")
 }
 
+
+#############################################
+# This function give an example of how to 
+# download the certificates from Azure Key-Vault
+#############################################
+download_certs() {
+
+    local certName=$1
+    local download_dir=$CERTS_DIR/download
+
+        # Download the certificate from Key Vault
+    az keyvault secret download --vault-name $keyVault --name $certName --file "$download_dir/$certName.pem"
+
+    # Export private key
+    openssl pkey -in "$download_dir/$certName.pem" -out "$download_dir/$certName.key"
+
+    # Export certifcate
+    openssl x509 -in "$download_dir/$certName.pem" -out "$download_dir/$certName.cert"
+}
+
+# Generate a private key and a certificate for the CA
 echo Root CA: Generate a private key and a certificate 
 generate_root_ca_cert ca $CERTS_DIR
 
+# Generate a private key and a certificate for the cluster
 echo Cluster: Generate a private key and a certificate
 generate_cert cluster $CERTS_DIR $CERTS_DIR/ca req_ext
 
-# Generate a private key and a certificate client
+# Generate a private key and a certificate for the client
 echo Client: Generate a private key and a certificate
 generate_cert client $CERTS_DIR $CERTS_DIR/ca req_ext
 
+# Example of how to download the certificates from Key-Vault
+#mkdir $CERTS_DIR/download
+#download_certs ca
+#download_certs cluster
+#download_certs client
+
 rm -rf $TEMP_DIR
+
