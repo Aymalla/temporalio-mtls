@@ -31,7 +31,7 @@ The caller also needs `Key Vault Certificates Officer` and `Key Vault Secrets Us
 to create, import certificates and download private keys.
 - Login to your subscription `az login`
 - Generate certificates for mTLS using Azure Key Vault `make keyvault-certs kv=<Key Vault Name>`.
-- Start temporal cluster `make start-temporal-cluster-mtls`.
+- Start temporal cluster `make start-cluster-mtls`.
 - Start workflow worker `make start-worker`.
 - Trigger new helloworld workflow instance `http://localhost:8000/workflow/start`.
 - Access Temporal dashboard UI to check running history

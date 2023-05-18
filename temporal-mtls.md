@@ -35,7 +35,7 @@ If you are using mTLS, is completely up to you how to get the clientCert and cli
 
 ## Self-signed vs Trusted CA-signed Certificates
 
-**Self-signed certificates** are created, issued, and signed by the entities whose identities the certificates are meant to verify. This means that the individual developers or the companies who have created and/or own the website or software in question are, essentially, signing off on themselves. Furthermore, self-signed certificates are signed by their own private keys. This is yet another reason why they’re not publicly trusted certificates
+**Self-signed certificates** are created, issued, and signed by the same entities for whom the certificates are meant to verify their identities. This means that the individual developers or the companies who have created and/or own the website or software in question are, essentially, signing off on themselves. Furthermore, self-signed certificates are signed by their own private keys. This is yet another reason why they’re not publicly trusted certificates
 
 **CA-signed certificate**, on the other hand, is signed by a third-party, publicly trusted certificate authority (CA). The popular CAs are Sectigo, Symantec, DigiCert, Thawte, GeoTrust, GlobalSign, GoDaddy, and Entrust.  These entities are responsible for validating the person or organization that requests each certificate. [read more here](https://sectigostore.com/page/self-signed-certificate-vs-ca/)
 
@@ -334,6 +334,8 @@ factory.start();
 
 ## Resources
 
+- [Azure key-vault certificate creation methods](https://learn.microsoft.com/en-us/azure/key-vault/certificates/create-certificate)
+- [Azure certificate CLI](https://learn.microsoft.com/en-us/cli/azure/keyvault/certificate)
 - [How to manage certificates in Temporal](https://docs.temporal.io/cloud/how-to-manage-certificates-in-temporal-cloud)
 - [Temporal Java Samples](https://github.com/temporalio/samples-java)
 - [Temporal Server Samples](https://github.com/temporalio/samples-server/tree/main/tls/tls-simple)
