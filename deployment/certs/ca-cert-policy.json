@@ -1,0 +1,38 @@
+﻿{
+  "issuerParameters": {
+    "certificateTransparency": null,
+    "name": "Self"
+  },
+  "keyProperties": {
+    "curve": null,
+    "exportable": true,
+    "keySize": 4096,
+    "keyType": "RSA",
+    "reuseKey": true
+  },
+  "lifetimeActions": [
+    {
+      "action": {
+        "actionType": "AutoRenew"
+      },
+      "trigger": {
+        "daysBeforeExpiry": 90
+      }
+    }
+  ],
+  "secretProperties": {
+    "contentType": "application/x-pem-file"
+  },
+  "x509CertificateProperties": {
+    "keyUsage": [
+      "cRLSign",
+      "dataEncipherment",
+      "digitalSignature",
+      "keyEncipherment",
+      "keyAgreement",
+      "keyCertSign"
+    ],
+    "subject": "OU=Test CA Corporation,O=Test CA Corporation,L=London,S=Greater London,C=UK",
+    "validityInMonths": 12
+  }
+}

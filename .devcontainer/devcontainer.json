@@ -1,0 +1,52 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/java
+{
+	"name": "Temporal",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/java:0-17",
+	"mounts": [
+		// Keep command history
+		//"type=volume,source=temporalio-mtls-bashhistory,target=/home/vscode/commandhistory",
+		// Mount docker socket for docker builds
+		//"type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock"
+	  ],
+	"features": {
+		"ghcr.io/devcontainers/features/java:1.1.1": {
+			"version": "none",
+			"installMaven": "false",
+			"installGradle": "true"
+		},
+		"ghcr.io/devcontainers/features/azure-cli:1": {},
+		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
+		// We use d-in-d because we need overlay networks
+		"ghcr.io/devcontainers/features/docker-in-docker:1": {},
+		"ghcr.io/mpriscella/features/kind:1": {},
+		"ghcr.io/devcontainers-contrib/features/springboot-sdkman:2.0.10": {
+			"jdkVersion": "17"
+		}
+		//"ghcr.io/devcontainers-contrib/features/redis-homebrew:1": {},
+		//"ghcr.io/dapr/cli/dapr-cli:0": {}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+   "forwardPorts": [8233,7233,8000],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": ".devcontainer/postCreateCommand.sh",
+
+	"customizations": {
+		"vscode": {
+			"extensions":[
+				"vscjava.vscode-java-pack",
+				"vmware.vscode-boot-dev-pack",
+				"vscjava.vscode-spring-boot-dashboard",
+				"github.copilot",
+				"ms-kubernetes-tools.vscode-kubernetes-tools",
+				"SonarSource.sonarlint-vscode",
+				"vscjava.vscode-gradle",
+				"ms-vscode.makefile-tools",
+				"ms-azuretools.vscode-docker"
+			]
+		}
+	}
+}
