@@ -38,7 +38,7 @@ generate_root_ca_cert() {
     # generate the CA certificate .pfx file
     openssl pkcs12 -export -out "$CERTS_DIR/$certName.pfx" -inkey "$CERTS_DIR/$certName.key" -in "$CERTS_DIR/$certName.cert" -keypbe NONE -certpbe NONE -passout pass:
     
-    # Import .pfx into Key-Vault to be safly stored and used by the application
+    # Import .pfx into Key-Vault to be safely stored and used by the application
     CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $keyVault --name $certName --file $CERTS_DIR/$certName.pfx)
 }
 
@@ -76,7 +76,7 @@ generate_cert() {
     # "-keypbe NONE -certpbe NONE -passout pass:" exports into an unencrypted .pfx archive (for testing only)
     openssl pkcs12 -export -out $dir/$certName.pfx -inkey $dir/$certName.key -in $chain_file -keypbe NONE -certpbe NONE -passout pass:
 
-    # Import .pfx into Key-Vault to be safly stored and used by the application
+    # Import .pfx into Key-Vault to be safely stored and used by the application
     CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $keyVault --name $certName --file $dir/$certName.pfx)
 }
 

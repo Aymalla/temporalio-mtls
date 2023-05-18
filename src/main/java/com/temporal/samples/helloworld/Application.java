@@ -17,6 +17,7 @@ public class Application {
 	public Application(Client temporalClient) {
 		this.temporalClient = temporalClient;
 	}
+	
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}

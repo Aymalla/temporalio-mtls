@@ -27,9 +27,9 @@ A customized configuration can be passed using either the
 
 - Clone repository `git clone https://github.com/Aymalla/temporalio-mtls.git`.
 - An Azure Key Vault need to be created to store certificates.
-The caller also needs `Key Vault Certificates Officer` and `Key Vault Secrets User` RBAC roles
+(The caller also needs `Key Vault Certificates Officer` and `Key Vault Secrets User` RBAC roles).
 to create, import certificates and download private keys.
-- Login to your subscription `az login`
+- Using Azure CLI Login to your subscription `az login`.
 - Generate certificates for mTLS using Azure Key Vault `make keyvault-certs kv=<Key Vault Name>`.
 - Start temporal cluster `make start-cluster-mtls`.
 - Start workflow worker `make start-worker`.
