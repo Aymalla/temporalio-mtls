@@ -52,6 +52,7 @@ generate_cert() {
     ###################################################
     # Create a certificate signed by the custom CA certificate generated above
     # The same script is used to generate both the cluster and client certs
+    # https://learn.microsoft.com/en-us/azure/key-vault/certificates/create-certificate-signing-request?tabs=azure-portal
     ###################################################
 
     # Create a new certificate in Key-Vault
