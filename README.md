@@ -31,7 +31,7 @@ and `Key Vault Secrets User` RBAC roles to run the scripts that create, import a
 - Sign in to your Azure subscription: `az login`.
 - Generate certificates for mTLS using Azure Key Vault:
 `make keyvault-certs kv=<Key Vault Name>`.
-- Start the temporal cluster: `make start-temporal-cluster-mtls`.
+- Start the temporal cluster: `make start-cluster-mtls`.
 - Start the workflow worker: `make start-worker`.
 - Trigger a new helloworld workflow instance: `http://localhost:8000/workflow/start`.
 - Access Temporal dashboard UI to check running history:
@@ -47,7 +47,7 @@ help                        💬 This help message :)
 keyvault-certs              🔐 Generate the Certificates using Azure Key Vault
 openssl-certs               🔐 Generate the Certificates using Openssl
 start-worker                🏃 start temporal worker with mlts support
-start-temporal-cluster-mtls 📦 start temporal cluster with mTLS
+start-cluster-mtls          📦 start temporal cluster with mTLS
 clean                       🧹 Clean the working folders created during build/demo
 ```
 
