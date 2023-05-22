@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
  * operations like (start - signal - getStatus)
  */
 @RestController
-@RequestMapping("/workflow")
+@RequestMapping("/")
 public class Starter {
     Client temporalClient;
 
@@ -26,6 +26,8 @@ public class Starter {
     @RequestMapping("/")
     public Map getServiceInfo() {
         var map = new HashMap<String, String>();
+        map.put("start-workflow-url", "http://localhost:8000/workflow/start");
+        map.put("temporal-dashboard-url", "http://localhost:8080/namespaces/default/workflows");
         map.put("temporal-server-url", temporalClient.getTemporalServerUrl());
         map.put("temporal-version", temporalClient.getTemporalVersion());
         return map;
@@ -37,10 +39,10 @@ public class Starter {
      * @return CompletableFuture<String>: workflow instance unique identified
      */
     @GetMapping
-    @RequestMapping("/start")
+    @RequestMapping("/workflow/start")
     public CompletableFuture<String> startRCCWorkflow() {
         String instanceId = UUID.randomUUID().toString();
         temporalClient.startNewGreetingWorkflow(instanceId, "World");
-        return CompletableFuture.completedFuture(instanceId);
+        return CompletableFuture.completedFuture("A new workflow instance created:"+ instanceId);
     }
 }

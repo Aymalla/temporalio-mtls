@@ -1,12 +1,11 @@
 package com.temporal.samples.helloworld;
 
-import io.grpc.Grpc;
-import io.grpc.TlsChannelCredentials;
-import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
+
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
-import io.temporal.serviceclient.SimpleSslContextBuilder;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.WorkerFactory;
@@ -23,16 +22,9 @@ import com.temporal.samples.helloworld.workflows.GreetingWorkflowImpl;
 import com.temporal.samples.helloworld.workflows.HelloActivityImpl;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.concurrent.CompletableFuture;
 
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 
 @Service
 @Getter
@@ -64,33 +56,21 @@ public class Client {
         temporalServerNamespace = env.getProperty("temporal.server.namespace");
         temporalServerCertAuthorityName = env.getProperty("temporal.server.certAuthorityName");
 
-        // Load your client certificate, which should look like:
+        // Load your client certificate:
         InputStream clientCert = new FileInputStream(env.getProperty("temporal.tls.client.certPath"));
         
-        // PKCS8 client key, which should look like:
+        // Load PKCS8 client key:
         InputStream clientKey = new FileInputStream(env.getProperty("temporal.tls.client.keyPath"));
         
         // Certification Authority signing certificate
         InputStream caCert = new FileInputStream(env.getProperty("temporal.tls.ca.certPath"));
 
-        // Create Trust Manager
-        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        trustStore.load(null, null);
-        X509Certificate certificate = (X509Certificate)CertificateFactory
-            .getInstance("X509")
-            .generateCertificate(caCert);
-        trustStore.setCertificateEntry("ca", certificate);
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory
-            .getInstance(TrustManagerFactory
-            .getDefaultAlgorithm());
-        trustManagerFactory.init(trustStore);
-        TrustManager trustManager = trustManagerFactory.getTrustManagers()[0];
-
-        // Create SslContext
-        SslContext sslContext = SimpleSslContextBuilder
-            .forPKCS8(clientCert, clientKey)
-            .setTrustManager(trustManager)
-            .build();
+        // Create an SSL Context using the client certificate and key
+        var sslContext = GrpcSslContexts.configure(SslContextBuilder
+        .forClient()
+        .keyManager(clientCert, clientKey)
+        .trustManager(caCert))
+        .build();
 
         /*
          * Get a Workflow service temporalClient which can be used to start, Signal, and
@@ -101,12 +81,10 @@ public class Client {
                 .newBuilder()
                 .setSslContext(sslContext)
                 .setTarget(temporalServerUrl)
-                .setChannelInitializer(c -> c
-                    .overrideAuthority(temporalServerCertAuthorityName))
+                .setChannelInitializer(c -> c.overrideAuthority(temporalServerCertAuthorityName)) // Override the server name used for TLS handshakes
                 .build());
 
-        // WorkflowClient can be used to start, signal, query, cancel, and terminate
-        // Workflows.
+        // WorkflowClient can be used to start, signal, query, cancel, and terminate Workflows.
         workflowClient = WorkflowClient.newInstance(service);
     }
 
