@@ -34,7 +34,7 @@ public class Starter {
     }
 
     /**
-     * Start new instance of register-credit workflow
+     * Start new instance of New Greeting workflow
      * 
      * @return CompletableFuture<String>: workflow instance unique identified
      */
