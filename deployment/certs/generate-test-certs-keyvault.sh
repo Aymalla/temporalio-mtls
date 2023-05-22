@@ -32,7 +32,7 @@ generate_root_ca_cert() {
     # https://github.com/Azure/azure-cli/issues/18178
     az rest \
         --method post \
-        --body @$certName-cert-policy-rest.json \
+        --body @$certName-cert-policy.json \
         --resource "https://vault.azure.net" \
         --headers '{"content-type":"application/json"}' \
         --uri "https://$keyVault.vault.azure.net/certificates/$certName/create" \
@@ -61,7 +61,7 @@ generate_root_ca_cert() {
     # The same script is used to generate both the cluster and client certs
     # https://learn.microsoft.com/en-us/azure/key-vault/certificates/create-certificate-signing-request?tabs=azure-portal
     #################################################################################
-    generate_cert() {
+generate_cert() {
     local certName=$1
     local dir=$2
     local ca=$3

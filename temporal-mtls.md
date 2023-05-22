@@ -97,21 +97,37 @@ The list of configuration required to create the new certs:
 ###################################################
 
 # Variables
-CERT_DIR=./certs
-CERT_NAME="ca"
-KEY_VAULT=""
+certDir=./certs
+certName="ca"
+keyVault="<key-vault-name>"
 
-# Generate the CA private key
-openssl genrsa -out $CERTS_DIR/$CERT_NAME.key 4096
+# `az rest` is used instead of `az keyvault certificate create` 
+# because the latter does not support creating a CA self-signed certificate
+# https://github.com/Azure/azure-cli/issues/18178
+az rest \
+    --method post \
+    --body @$certName-cert-policy.json \
+    --resource "https://vault.azure.net" \
+    --headers '{"content-type":"application/json"}' \
+    --uri "https://$keyVault.vault.azure.net/certificates/$certName/create" \
+    --uri-parameters 'api-version=7.2'
 
-# Generate the CA certificate
-openssl req -new -x509 -key $CERTS_DIR/$CERT_NAME.key -sha256 -subj "/OU=Test CA Corporation/O=Test CA Corporation/L=London/S=Greater London/C=UK" -days 365 -out $CERTS_DIR/$CERT_NAME.cert
+# Wait for cert to be ready
+status="inProgress"
+while [ "$status" != "completed" ]
+do
+    status=$(az keyvault certificate pending show --vault-name=$keyVault --name=$certName --query status --output tsv)
+    sleep 1
+done
 
-# Generate the CA certificate .pfx file
-openssl pkcs12 -export -out "$CERTS_DIR/$CERT_NAME.pfx" -inkey "$CERTS_DIR/$CERT_NAME.key" -in "$CERTS_DIR/$CERT_NAME.cert" -keypbe NONE -certpbe NONE -passout pass:
+# Download the certificate from Key Vault
+az keyvault secret download --vault-name $keyVault --name $certName --file "$certDir/$certName.pem"
 
-# Import .pfx into Key-Vault to be safely stored and used by the application
-CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $KEY_VAULT --name $CERT_NAME --file $CERTS_DIR/$CERT_NAME.pfx)
+# Export private key
+openssl pkey -in "$certDir/$certName.pem" -out "$certDir/$certName.key"
+
+# Export certificate
+openssl x509 -in "$certDir/$certName.pem" -out "$certDir/$certName.cert"
 
 ```
 
@@ -125,35 +141,37 @@ CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $KEY_VAULT --
 ###################################################
 
 # Variables
-CERT_DIR=./certs
-CERT_NAME="cluster"
-CERT_CA_NAME="ca"
-KEY_VAULT="<>"
+certDir=./certs
+certName="cluster"
+caCertName="ca"
+keyVault="<key-vault-name>"
 
 # Create a new certificate in Key-Vault
-CSR=$(az keyvault certificate create --vault-name $KEY_VAULT --name $CERT_NAME --policy "@$CERT_NAME-cert-policy.json" | jq -r '.csr')
+CSR=$(az keyvault certificate create --vault-name $keyVault --name $certName --policy "@$certName-cert-policy.json" | jq -r '.csr')
 
-# Download and create the certificate CSR(Certificate signing request) File
+# Create the certificate CSR(Certificate signing request) file
 CSR_FILE_CONTENT="-----BEGIN CERTIFICATE REQUEST-----\n$CSR\n-----END CERTIFICATE REQUEST-----"
-echo -e $CSR_FILE_CONTENT >> "$CERT_DIR/$CERT_NAME.csr"
+echo -e $CSR_FILE_CONTENT >> "$certDir/$certName.csr"
 
 # Download the private key from Key-Vault in PEM Format
-az keyvault secret download --vault-name $KEY_VAULT --name $CERT_NAME --file "$CERTS_DIR/$CERT_NAME.key"
+az keyvault secret download --vault-name $keyVault --name $certName --file "$certDir/$certName.pem"
+
+# Export private key from the downloaded pem file
+openssl pkey -in "$certDir/$certName.pem" -out "$certDir/$certName.key"
 
 # Create the signed certificate using the downloaded CSR (certificate signing request)
-openssl x509 -req -in $CERT_DIR/$CERT_NAME.csr -CA $CERT_CA_NAME.cert -CAkey $CERT_CA_NAME.key -sha256 -CAcreateserial -out $CERT_DIR/$CERT_NAME.pem -days 365 -extfile $CERT_NAME.conf -extensions $exts
-local chain_file="$CERT_DIR/$CERT_NAME.pem"
+openssl x509 -req -in $certDir/$certName.csr -CA $caCertName.cert -CAkey $caCertName.key -sha256 -CAcreateserial -out $certDir/$certName.cert -days 365 -extfile $certName.conf -extensions $exts
+local chain_file="$certDir/$certName.cert"
 if [[ $no_chain_opt != no_chain ]]; then
-    chain_file="$CERT_DIR/$CERT_NAME-chain.pem"
-    cat $CERT_DIR/$CERT_NAME.pem $CERT_CA_NAME.cert > $chain_file
+    chain_file="$certDir/$certName-chain.cert"
+    cat $certDir/$certName.cert $caCertName.cert > $chain_file
 fi
 
-# Generate the certificate .pfx (Personal Information Exchange) file which is PKCS 12 archive file format
-# "-keypbe NONE -certpbe NONE -passout pass:" exports into an unencrypted .pfx archive (for testing only)
-openssl pkcs12 -export -out $CERT_DIR/$CERT_NAME.pfx -inkey $CERT_DIR/$CERT_NAME.key -in $chain_file -keypbe NONE -certpbe NONE -passout pass:
+# Generate the updated pem file with both cert and key to be imported into the Key-Vault
+cat "$certDir/$certName.key" $chain_file > "$certDir/$certName.pem"
 
-# Import .pfx into Key-Vault to be safely stored and used by the application
-CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $KEY_VAULT --name $CERT_NAME --file $CERT_DIR/$CERT_NAME.pfx)
+# Import new pem into the Key-Vault to be safely stored and used by the application
+CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $keyVault --name $certName --file "$certDir/$certName.pem")
 
 ```
 
