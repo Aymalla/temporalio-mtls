@@ -29,5 +29,6 @@ start-cluster-mtls: ## 📦 start temporal cluster
 
 clean: ## 🧹 Clean the working folders
 	@echo -e "----\e[34mStart $@\e[0m----" || true
+	@cd deployment/tls-simple && docker-compose down
 	@rm -rf deployment/certs/certs
 	@echo -e "----\e[34mCompleted\e[0m----"
