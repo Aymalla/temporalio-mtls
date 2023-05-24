@@ -3,6 +3,8 @@ package com.temporal.samples.helloworld;
 
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
+import io.temporal.authorization.AuthorizationGrpcMetadataProvider;
+import io.temporal.authorization.AuthorizationTokenSupplier;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
@@ -72,6 +74,11 @@ public class Client {
         .trustManager(caCert))
         .build();
 
+
+        // Implement code to retrieve an access token, then provide it below.
+        // AuthorizationTokenSupplier tokenSupplier = 
+        //     () -> "Bearer {Access Token}";
+
         /*
          * Get a Workflow service temporalClient which can be used to start, Signal, and
          * Query Workflow Executions. This gRPC stubs wrapper talks to the Temporal service.
@@ -82,6 +89,7 @@ public class Client {
                 .setSslContext(sslContext)
                 .setTarget(temporalServerUrl)
                 .setChannelInitializer(c -> c.overrideAuthority(temporalServerCertAuthorityName)) // Override the server name used for TLS handshakes
+                // .addGrpcMetadataProvider(new AuthorizationGrpcMetadataProvider(tokenSupplier)) // Uncomment for using authorization
                 .build());
 
         // WorkflowClient can be used to start, signal, query, cancel, and terminate Workflows.
