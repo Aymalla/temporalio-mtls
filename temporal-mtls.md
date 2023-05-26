@@ -87,6 +87,8 @@ The list of configuration required to create the new certs:
 - ***Cluster:*** [config](deployment/certs/cluster.conf) and [policy](deployment/certs/cluster-cert-policy.json) files
 - ***Client:*** [config](deployment/certs/client.conf) and [policy](deployment/certs/client-cert-policy.json) files
 
+Full source code  [generate-test-certs-keyvault.sh](deployment/certs/generate-test-certs-keyvault.sh)
+
 ```bash
 
 # generate-test-certs-keyvault.sh
@@ -178,8 +180,8 @@ CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $keyVault --n
 ### 2. Deploy and start Temporal Cluster
 
 After generating the certificates, now we can start up the temporal cluster using:
-- [***docker-compose.yml***](deployment/tls-simple/docker-compose.yml): contains the definition for cluster nodes and configurations.
-- [***start-temporal.sh***](deployment/tls-simple/start-temporal.sh) : Script to set the environment variables and compose the cluster.
+- [**docker-compose.yml**](deployment/tls-simple/docker-compose.yml): contains the definition for cluster nodes and configurations.
+- [**start-temporal.sh**](deployment/tls-simple/start-temporal.sh) : Script to set the environment variables and compose the cluster.
 
 ```yaml
  # docker-compose.yml
@@ -257,6 +259,8 @@ services:
       - temporal
 ```
 
+Full source code  [start-temporal.sh](deployment/tls-simple/start-temporal.sh)
+
 ```bash
 # start-temporal.sh
 
@@ -274,66 +278,54 @@ docker-compose up
 
 ### 3. Start Temporal Worker (Client)  
 
+Full source code  [Client.java](src/main/java/com/temporal/samples/helloworld/Client.java)
+
 ```java
 
 // Client.java
 
-// client certificate, which should look like:
+temporalTaskQueue = env.getProperty("temporal.workflow.taskqueue");
+temporalServerUrl = env.getProperty("temporal.server.url");
+temporalVersion = env.getProperty("temporal.version");
+temporalServerNamespace = env.getProperty("temporal.server.namespace");
+temporalServerCertAuthorityName = env.getProperty("temporal.server.certAuthorityName");
+
+// Load your client certificate:
 InputStream clientCert = new FileInputStream(env.getProperty("temporal.tls.client.certPath"));
-// client key, which should look like:
+
+// Load PKCS8 client key:
 InputStream clientKey = new FileInputStream(env.getProperty("temporal.tls.client.keyPath"));
-// certification Authority signing certificate
+
+// Certification Authority signing certificate
 InputStream caCert = new FileInputStream(env.getProperty("temporal.tls.ca.certPath"));
 
-// Create a TLS Channel Credential Builder : https://community.temporal.io/t/how-to-disable-host-name-verification/2808/8
-var tlsBuilder = TlsChannelCredentials.newBuilder();
-tlsBuilder.keyManager(clientCert, clientKey);
-tlsBuilder.trustManager(caCert);
-var channel = Grpc.newChannelBuilder(temporalServerUrl, tlsBuilder.build())
-        .overrideAuthority(temporalServerCertAuthorityName)
-        .build();
+// Create an SSL Context using the client certificate and key
+var sslContext = GrpcSslContexts.configure(SslContextBuilder
+.forClient()
+.keyManager(clientCert, clientKey)
+.trustManager(caCert))
+.build();
+
+
+// This code is required if you are using Temporal's authorization feature. 
+// Implement code to retrieve an access token, then provide it below.
+// AuthorizationTokenSupplier tokenSupplier = 
+//     () -> "Bearer {Access Token}";
 
 /*
-* Get a Workflow service temporalClient which can be used to start, Signal, and
-* Query Workflow Executions. This gRPC stubs wrapper talks to the Temporal service.
-*/
+  * Get a Workflow service temporalClient which can be used to start, Signal, and
+  * Query Workflow Executions. This gRPC stubs wrapper talks to the Temporal service.
+  */
 WorkflowServiceStubs service = WorkflowServiceStubs.newServiceStubs(
-        WorkflowServiceStubsOptions
-                .newBuilder()
-                .setChannel(channel)
-                .build());
+    WorkflowServiceStubsOptions
+        .newBuilder()
+        .setSslContext(sslContext)
+        .setTarget(temporalServerUrl)
+        .setChannelInitializer(c -> c.overrideAuthority(temporalServerCertAuthorityName)) // Override the server name used for TLS handshakes
+        .build());
 
 // WorkflowClient can be used to start, signal, query, cancel, and terminate Workflows.
 workflowClient = WorkflowClient.newInstance(service);
-
-/*
-* Define the workflow factory. It is used to create workflow workers that poll specific Task Queues.
-*/
-WorkerFactory factory = WorkerFactory.newInstance(workflowClient);
-
-/*
-* Define the workflow worker. Workflow workers listen to a defined task queue
-* and process workflows and activities.
-*/
-io.temporal.worker.Worker worker = factory.newWorker(getTemporalTaskQueue());
-
-/*
-* Register our workflow implementation with the worker. Workflow implementations must be known to 
-* the worker at runtime in order to dispatch workflow tasks.
-*/
-worker.registerWorkflowImplementationTypes(GreetingWorkflowImpl.class);
-
-/*
-* Register our Activity Types with the Worker. Since Activities are stateless and thread-safe,
-* the Activity Type is a shared instance.
-*/
-worker.registerActivitiesImplementations(new HelloActivityImpl());
-
-/*
-* Start all the workers registered for a specific task queue.
-* The started workers then start polling for workflows and activities.
-*/
-factory.start();
 
 ```
 
