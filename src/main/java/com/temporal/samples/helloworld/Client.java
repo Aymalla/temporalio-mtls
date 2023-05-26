@@ -75,6 +75,7 @@ public class Client {
         .build();
 
 
+        // This code is required if you are using Temporal's authorization feature. 
         // Implement code to retrieve an access token, then provide it below.
         // AuthorizationTokenSupplier tokenSupplier = 
         //     () -> "Bearer {Access Token}";
@@ -89,7 +90,7 @@ public class Client {
                 .setSslContext(sslContext)
                 .setTarget(temporalServerUrl)
                 .setChannelInitializer(c -> c.overrideAuthority(temporalServerCertAuthorityName)) // Override the server name used for TLS handshakes
-                // .addGrpcMetadataProvider(new AuthorizationGrpcMetadataProvider(tokenSupplier)) // Uncomment for using authorization
+                // .addGrpcMetadataProvider(new AuthorizationGrpcMetadataProvider(tokenSupplier)) // Uncomment if you're using Temporal's authorization
                 .build());
 
         // WorkflowClient can be used to start, signal, query, cancel, and terminate Workflows.

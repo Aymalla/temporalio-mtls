@@ -50,6 +50,9 @@ start-worker                🏃 start temporal worker with mlts support
 start-cluster-mtls          📦 start temporal cluster with mTLS
 clean                       🧹 Clean the working folders created during build/demo
 ```
+## Temporal authentication and authorization using Azure Active Directory(AAD)
+
+To enable single-sign-on(SSO) for temporal web UI users and using the Azure Active directory (AAD) as Oauth identity provider for authenticating users and generating JWT access tokens [please check this blog](https://phongthaicao.medium.com/temporal-authentication-and-authorization-using-azure-ad-f940646b61e0)
 
 ## Resources
 

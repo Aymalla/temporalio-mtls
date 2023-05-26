@@ -16,6 +16,7 @@ services:
       - "CASSANDRA_SEEDS=cassandra"
       - "DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml"
       - "SERVICES=frontend:matching:history:internal-frontend:worker"
+      # Docs: https://www.opensourceagenda.com/projects/temporalio-temporal/versions
       - "USE_INTERNAL_FRONTEND=true"
       - "SKIP_DEFAULT_NAMESPACE_CREATION=false"
       - "TEMPORAL_TLS_SERVER_CA_CERT=${TEMPORAL_TLS_CERTS_DIR}/ca.cert"
@@ -36,10 +37,13 @@ services:
       - "TEMPORAL_CLI_TLS_KEY=${TEMPORAL_TLS_CERTS_DIR}/cluster.key"
       - "TEMPORAL_CLI_TLS_ENABLE_HOST_VERIFICATION=true"
       - "TEMPORAL_CLI_TLS_SERVER_NAME=tls-sample"
-      # Uncomment to enable authorization
+      # Uncomment to enable jwt authorization
+      # Enable default authorizer and claim mapper
       # - "TEMPORAL_AUTH_AUTHORIZER=default"
       # - "TEMPORAL_AUTH_CLAIM_MAPPER=default"
+      # specify the permissions source property in jwt token
       # - "TEMPORAL_JWT_PERMISSIONS_CLAIM=roles"
+      # JWKS containing the public keys used to verify access tokens
       # - "TEMPORAL_JWT_KEY_SOURCE1=https://login.microsoftonline.com/{Tenant ID}/discovery/v2.0/keys"
       # - "TEMPORAL_JWT_KEY_REFRESH=30m"
     depends_on:
@@ -57,13 +61,18 @@ services:
       - "TEMPORAL_TLS_KEY=${TEMPORAL_TLS_CERTS_DIR}/cluster.key"
       - "TEMPORAL_TLS_ENABLE_HOST_VERIFICATION=true"
       - "TEMPORAL_TLS_SERVER_NAME=tls-sample"
-      # Uncomment to enable authorization
+      # Uncomment to enable SSO  authentication and authorization
+      # Enable authorization
       # - "TEMPORAL_AUTH_ENABLED=true"
+      # Specify authorization server and issuer 
       # - "TEMPORAL_AUTH_PROVIDER_URL=https://login.microsoftonline.com/{Tenant ID}/v2.0"
       # - "TEMPORAL_AUTH_ISSUER_URL=https://login.microsoftonline.com/{Tenant ID}/v2.0"
+      # Specify client ID and secret
       # - "TEMPORAL_AUTH_CLIENT_ID={Client ID}"
       # - "TEMPORAL_AUTH_CLIENT_SECRET={Client Secret}"
+      # Specify callback URL which is the redirect URI in the app registration
       # - "TEMPORAL_AUTH_CALLBACK_URL=http://localhost:8080/auth/sso/callback"
+      # Specify the authentication scope
       # - "TEMPORAL_AUTH_SCOPES=openid,api://{Client ID}/default"
     depends_on:
       - temporal
