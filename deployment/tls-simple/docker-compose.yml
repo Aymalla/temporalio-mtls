@@ -38,7 +38,6 @@ services:
       - "TEMPORAL_CLI_TLS_ENABLE_HOST_VERIFICATION=true"
       - "TEMPORAL_CLI_TLS_SERVER_NAME=tls-sample"
       # Uncomment to enable jwt authorization
-      # Enable the creation of "temporal-system" without the need for access token
       # Enable default authorizer and claim mapper
       # - "TEMPORAL_AUTH_AUTHORIZER=default"
       # - "TEMPORAL_AUTH_CLAIM_MAPPER=default"
@@ -61,7 +60,7 @@ services:
       - "TEMPORAL_TLS_KEY=${TEMPORAL_TLS_CERTS_DIR}/cluster.key"
       - "TEMPORAL_TLS_ENABLE_HOST_VERIFICATION=true"
       - "TEMPORAL_TLS_SERVER_NAME=tls-sample"
-      #  Uncomment to enable SSO  authentication and authorization
+      # Uncomment to enable SSO  authentication and authorization
       # Enable authorization
       # - "TEMPORAL_AUTH_ENABLED=true"
       # Specify authorization server and issuer 

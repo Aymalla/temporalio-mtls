@@ -87,7 +87,7 @@ The list of configuration required to create the new certs:
 - ***Cluster:*** [config](deployment/certs/cluster.conf) and [policy](deployment/certs/cluster-cert-policy.json) files
 - ***Client:*** [config](deployment/certs/client.conf) and [policy](deployment/certs/client-cert-policy.json) files
 
-Full source code  [generate-test-certs-keyvault.sh](deployment/certs/generate-test-certs-keyvault.sh)
+Full source code [generate-test-certs-keyvault.sh](deployment/certs/generate-test-certs-keyvault.sh)
 
 ```bash
 
@@ -259,7 +259,7 @@ services:
       - temporal
 ```
 
-Full source code  [start-temporal.sh](deployment/tls-simple/start-temporal.sh)
+Full source code [start-temporal.sh](deployment/tls-simple/start-temporal.sh)
 
 ```bash
 # start-temporal.sh
@@ -278,7 +278,7 @@ docker-compose up
 
 ### 3. Start Temporal Worker (Client)  
 
-Full source code  [Client.java](src/main/java/com/temporal/samples/helloworld/Client.java)
+Full source code [Client.java](src/main/java/com/temporal/samples/helloworld/Client.java)
 
 ```java
 
