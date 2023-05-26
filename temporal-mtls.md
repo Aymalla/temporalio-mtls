@@ -201,12 +201,15 @@ services:
     environment:
       - "CASSANDRA_SEEDS=cassandra"
       - "DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml"
+      - "SERVICES=frontend:matching:history:internal-frontend:worker"
+      # Docs: https://www.opensourceagenda.com/projects/temporalio-temporal/versions
+      - "USE_INTERNAL_FRONTEND=true"
       - "SKIP_DEFAULT_NAMESPACE_CREATION=false"
       - "TEMPORAL_TLS_SERVER_CA_CERT=${TEMPORAL_TLS_CERTS_DIR}/ca.cert"
-      - "TEMPORAL_TLS_SERVER_CERT=${TEMPORAL_TLS_CERTS_DIR}/cluster.pem"
+      - "TEMPORAL_TLS_SERVER_CERT=${TEMPORAL_TLS_CERTS_DIR}/cluster.cert"
       - "TEMPORAL_TLS_SERVER_KEY=${TEMPORAL_TLS_CERTS_DIR}/cluster.key"
       - "TEMPORAL_TLS_REQUIRE_CLIENT_AUTH=true"
-      - "TEMPORAL_TLS_FRONTEND_CERT=${TEMPORAL_TLS_CERTS_DIR}/cluster.pem"
+      - "TEMPORAL_TLS_FRONTEND_CERT=${TEMPORAL_TLS_CERTS_DIR}/cluster.cert"
       - "TEMPORAL_TLS_FRONTEND_KEY=${TEMPORAL_TLS_CERTS_DIR}/cluster.key"
       - "TEMPORAL_TLS_CLIENT1_CA_CERT=${TEMPORAL_TLS_CERTS_DIR}/ca.cert"
       - "TEMPORAL_TLS_CLIENT2_CA_CERT=${TEMPORAL_TLS_CERTS_DIR}/ca.cert"
@@ -214,29 +217,14 @@ services:
       - "TEMPORAL_TLS_FRONTEND_SERVER_NAME=tls-sample"
       - "TEMPORAL_TLS_FRONTEND_DISABLE_HOST_VERIFICATION=false"
       - "TEMPORAL_TLS_INTERNODE_DISABLE_HOST_VERIFICATION=false"
-      - "TEMPORAL_CLI_ADDRESS=temporal:7233"
+      - "TEMPORAL_CLI_ADDRESS=temporal:7236"
       - "TEMPORAL_CLI_TLS_CA=${TEMPORAL_TLS_CERTS_DIR}/ca.cert"
-      - "TEMPORAL_CLI_TLS_CERT=${TEMPORAL_TLS_CERTS_DIR}/cluster.pem"
+      - "TEMPORAL_CLI_TLS_CERT=${TEMPORAL_TLS_CERTS_DIR}/cluster.cert"
       - "TEMPORAL_CLI_TLS_KEY=${TEMPORAL_TLS_CERTS_DIR}/cluster.key"
       - "TEMPORAL_CLI_TLS_ENABLE_HOST_VERIFICATION=true"
       - "TEMPORAL_CLI_TLS_SERVER_NAME=tls-sample"
     depends_on:
       - cassandra
-  temporal-web:
-    image: temporalio/web:${WEB_TAG:-latest}
-    ports:
-      - "8088:8088"
-    volumes:
-      - ${TEMPORAL_LOCAL_CERT_DIR}:${TEMPORAL_TLS_CERTS_DIR}
-    environment:
-      - "TEMPORAL_GRPC_ENDPOINT=temporal:7233"
-      - "TEMPORAL_TLS_CERT_PATH=${TEMPORAL_TLS_CERTS_DIR}/cluster.pem"
-      - "TEMPORAL_TLS_KEY_PATH=${TEMPORAL_TLS_CERTS_DIR}/cluster.key"
-      - "TEMPORAL_TLS_CA_PATH=${TEMPORAL_TLS_CERTS_DIR}/ca.cert"
-      - "TEMPORAL_TLS_ENABLE_HOST_VERIFICATION=true"
-      - "TEMPORAL_TLS_SERVER_NAME=tls-sample"
-    depends_on:
-      - temporal
   temporal-ui:
     image: temporalio/ui:${UI_TAG:-latest}
     ports:
@@ -246,7 +234,7 @@ services:
     environment:
       - "TEMPORAL_ADDRESS=temporal:7233"
       - "TEMPORAL_TLS_CA=${TEMPORAL_TLS_CERTS_DIR}/ca.cert"
-      - "TEMPORAL_TLS_CERT=${TEMPORAL_TLS_CERTS_DIR}/cluster.pem"
+      - "TEMPORAL_TLS_CERT=${TEMPORAL_TLS_CERTS_DIR}/cluster.cert"
       - "TEMPORAL_TLS_KEY=${TEMPORAL_TLS_CERTS_DIR}/cluster.key"
       - "TEMPORAL_TLS_ENABLE_HOST_VERIFICATION=true"
       - "TEMPORAL_TLS_SERVER_NAME=tls-sample"
@@ -259,15 +247,14 @@ services:
     volumes:
       - ${TEMPORAL_LOCAL_CERT_DIR}:${TEMPORAL_TLS_CERTS_DIR}
     environment:
-      - "TEMPORAL_CLI_ADDRESS=temporal:7233"
+      - "TEMPORAL_CLI_ADDRESS=temporal:7236"
       - "TEMPORAL_CLI_TLS_CA=${TEMPORAL_TLS_CERTS_DIR}/ca.cert"
-      - "TEMPORAL_CLI_TLS_CERT=${TEMPORAL_TLS_CERTS_DIR}/client.pem"
+      - "TEMPORAL_CLI_TLS_CERT=${TEMPORAL_TLS_CERTS_DIR}/client.cert"
       - "TEMPORAL_CLI_TLS_KEY=${TEMPORAL_TLS_CERTS_DIR}/client.key"
       - "TEMPORAL_CLI_TLS_ENABLE_HOST_VERIFICATION=true"
       - "TEMPORAL_CLI_TLS_SERVER_NAME=tls-sample"
     depends_on:
       - temporal
-
 ```
 
 ```bash
