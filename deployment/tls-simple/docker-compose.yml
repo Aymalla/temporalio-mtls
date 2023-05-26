@@ -43,6 +43,7 @@ services:
       # - "TEMPORAL_AUTH_CLAIM_MAPPER=default"
       # specify the permissions source property in jwt token
       # - "TEMPORAL_JWT_PERMISSIONS_CLAIM=roles"
+      # JWKS containing the public keys used to verify access tokens
       # - "TEMPORAL_JWT_KEY_SOURCE1=https://login.microsoftonline.com/{Tenant ID}/discovery/v2.0/keys"
       # - "TEMPORAL_JWT_KEY_REFRESH=30m"
     depends_on:

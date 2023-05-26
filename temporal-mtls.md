@@ -179,7 +179,7 @@ CERT_IMPORT_RESPONSE=$(az keyvault certificate import --vault-name $keyVault --n
 
 ### 2. Deploy and start Temporal Cluster
 
-After generating the certificates, now we can start up the temporal cluster using:
+After generating the certificates, we can now start up the temporal cluster using:
 - [**docker-compose.yml**](deployment/tls-simple/docker-compose.yml): contains the definition for cluster nodes and configurations.
 - [**start-temporal.sh**](deployment/tls-simple/start-temporal.sh) : Script to set the environment variables and compose the cluster.
 
@@ -306,12 +306,6 @@ var sslContext = GrpcSslContexts.configure(SslContextBuilder
 .trustManager(caCert))
 .build();
 
-
-// This code is required if you are using Temporal's authorization feature. 
-// Implement code to retrieve an access token, then provide it below.
-// AuthorizationTokenSupplier tokenSupplier = 
-//     () -> "Bearer {Access Token}";
-
 /*
   * Get a Workflow service temporalClient which can be used to start, Signal, and
   * Query Workflow Executions. This gRPC stubs wrapper talks to the Temporal service.
@@ -331,7 +325,7 @@ workflowClient = WorkflowClient.newInstance(service);
 
 [Run the sample on your local machine](./README.md)
 
-## Resources
+## References
 
 - [Azure key-vault certificate creation methods](https://learn.microsoft.com/en-us/azure/key-vault/certificates/create-certificate)
 - [Azure certificate CLI](https://learn.microsoft.com/en-us/cli/azure/keyvault/certificate)
